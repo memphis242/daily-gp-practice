@@ -1,5 +1,5 @@
 # :brain: Daily General-Purpose Programming Practice
-Although I have separate "practice" repositories for the different programming languages in my toolkit, I'd like a general-purpose program that is quick enough to write in under 30 min in any programming language (once I get efficient enough) and touches many important concepts in programming.
+Although I have separate "practice" repositories for the different programming languages in my toolkit, I'd like a general-purpose program that is quick enough to write in under 30 min in any programming language (once I get efficient enough) and touches many important concepts in programming. In addition to writing the program as an exercise, there shall be an existing test suite + static code analysis + linting present to verify & validate the program.
 
 ## Program
 
