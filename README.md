@@ -11,20 +11,44 @@ Although I have separate "practice" repositories for the different programming l
 5. User Input
 6. Command-Line Argument Parsing
 7. Time-Keeping
-8. Kernel Signals
+8. Kernel Signaling
+9. Databases
+10. I/O Multiplexing
 
 ### Spec
-Write a program that:
+1. REPL client and server program (case-insensitive)
+   - Client commands:
+      - check
+      - ienter (sets up information input for DB and JSON file)
+      - exit (exits ienter)
+      - quit (ends session)
+      - send (sends DB to server)
+      - prdb
+   - Server commands:
+      - check
+      - ldb (list databases)
+      - prdb
+      - await (waits for reception of DB)
 
-1. can establish a TFTP connection between a client and server on the _same_ host (or with a Raspberry Pi server) in order to transfer a JSON file >100 lines long (structure is up to you).
+2. Can establish a TFTP connection between a client and server on the _same_ host (or with a Raspberry Pi server) in order to transfer a file.
 
-2. The client is responsible for producing the JSON file by asking for user input via the terminal.
+3. The client is responsible for producing the JSON file by asking for user input via the terminal.
 
-3. A command-line argument is passed to establish a timeout of user entry and file transfer parameters, with defaults assumed if none are given. One of the file transfer parameters needs to be the speed at which the TFTP data packets are sent. This is done to facilitate packet drop simulation to check correct handling of that.
+4. A command-line argument is passed to establish a timeout of user entry and file transfer parameters, with defaults assumed if none are given. One of the file transfer parameters needs to be the speed at which the TFTP data packets are sent. This is done to facilitate packet drop simulation to check correct handling of that.
 
-4. At any point, the user of the client may submit an interrupt signal to cancel the session. The client program will handle this gracefully by informing the server that the client has cancelled the session, after which the server also begins its graceful exit. This is going to be on a _different_ port than the TFTP connection, of course.
+5. At any point, the user of the client may submit an interrupt signal to cancel the session. The client program will handle this gracefully by informing the server that the client has cancelled the session, after which the server also begins its graceful exit. This is going to be on a _different_ port than the TFTP connection, of course.
 
-5. Once user input is complete, the client program establishes the TFTP connection, making a write file request, and starts transfering to completion.
+6. Once user input is complete, the client program establishes the TFTP connection, making a write file request, and starts transfering to completion.
    - At any point, the server may "drop" a packet via user signalling on the server end. The behavior of both endpoints here should abide by the TFTP RFC 1350 standard.
 
-6. Upon completion of the transfer, the server prints out, in dictionary/map form separate from JSON, the contents of the JSON file structure it received. This printout may be on console output of the server or via packet transfers back to the client (protocol of your choosing) which writes the contents to a file.
+7. Upon completion of the transfer, the server prints out, in dictionary/map form separate from JSON, the contents of the JSON file structure it received. This printout may be on console output of the server or via packet transfers back to the client (protocol of your choosing) which writes the contents to a file.
+
+8. Both client and server shall backup the data to a SQLite database (local files). This database shall persist over repetitions of this exercise.
+
+9. Both client and server shall support the PRDB command to print their databases to console output and to a JSON file.
+
+10. The DB data will be:
+   - Users
+      - First Name
+      - Last Name
+      - Job
