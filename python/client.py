@@ -4,12 +4,17 @@ import tftpy
 import sqlite3
 import argparse
 import json
+import socket
 
 # Defensive programming
 from enum import Enum
 
 # Local Constants
 CLIENT_JSON_FILE_NAME = "client.json"
+DB_FILE_NAME          = "exercise.db"
+
+DEFAULT_SERVER_IP_ADDR = "192.168.0.1"
+DEFAULT_SERVER_CHECK_PORT = 2020
 
 # Local Definitions
 class ClientCmds(Enum):
@@ -20,11 +25,6 @@ class ClientCmds(Enum):
     PRINT_DB = 'prdb'
     QUIT = 'quit'
     EXIT = 'exit'
-
-class ClientStateMachine(Enum):
-    OFF = 0
-    PROMPT = 1
-    CMD_PROCESSING = 2
 
 class MainExitCodes(Enum):
     AFTER_TRANSFER = 0
@@ -39,6 +39,7 @@ class MainExitCodes(Enum):
 def main():
     # Parse command-line arguments
     parser = argparse.ArgumentParser()
+    # TODO: Address potential exceptions here from type mismatching
     parser.add_argument('-t', '--timeout',
                         type=int,
                         default=50,
@@ -49,8 +50,17 @@ def main():
     parser.add_argument('--transfer-json',
                         action='store_true',
                         help='The TFTP file transfer shall be on the JSON file')
+    parser.add_argument('--server-ip',
+                        default=DEFAULT_SERVER_IP_ADDR,
+                        help="Server's IPv4 address")
+    parser.add_argument('--server-cc-port',
+                        default=DEFAULT_SERVER_CHECK_PORT,
+                        type=int,
+                        help="Server's check connection port")
     args = parser.parse_args()
     print(args)
+
+    # TODO: Confirm server's IP address is IPv4
 
     # Start up REPL CLI
     print('Starting up client CLI...')
@@ -68,12 +78,19 @@ def main():
             match user_cmd:
                 case ClientCmds.CHECK_CONNECTION.value:
                     print('Checking connection to server...')
+                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+                        s.settimeout(5.0)
+                        # TODO: Catch timeout exceptions
+                        s.connect( (args.server_ip, args.server_cc_port) )
+                        s.sendall(b"Marco!")
+                        data = s.recv(1024)
+                        print( f"Received from the server: { data.decode() }" )
                     # TODO
-                
+
                 case ClientCmds.INPUT_ENTRY.value:
                     print('Inputs for database.value:')
                     # TODO
-                
+
                 case ClientCmds.SEND.value:
                     print('Sending DB file...')
                     # TODO
@@ -88,8 +105,8 @@ def main():
 
                 case _:
                     print( f'Unknown command: {user_cmd}')
-            
-        assert nreps <= MAX_NREPS, f'Somehow, nreps passed {MAX_NREPS}...'
+
+        assert nreps <= MAX_NREPS, f'Somehow, nreps passed {MAX_NREPS}... nreps: {nreps}'
 
         if file_transfer_completed:
             # Await for response from server on its DB...
