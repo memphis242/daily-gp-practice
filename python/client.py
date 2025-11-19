@@ -8,12 +8,13 @@ import socket
 
 # Defensive programming
 from enum import Enum
+from typing import List
 
 # Local Constants
 CLIENT_JSON_FILE_NAME = "client.json"
 DB_FILE_NAME          = "exercise.db"
 
-DEFAULT_SERVER_IP_ADDR = "192.168.0.1"
+DEFAULT_SERVER_IP_ADDR = "127.0.0.1"
 DEFAULT_SERVER_CHECK_PORT = 2020
 
 # Local Definitions
@@ -77,14 +78,9 @@ def main():
 
             match user_cmd:
                 case ClientCmds.CHECK_CONNECTION.value:
-                    print('Checking connection to server...')
-                    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
-                        s.settimeout(5.0)
-                        # TODO: Catch timeout exceptions
-                        s.connect( (args.server_ip, args.server_cc_port) )
-                        s.sendall(b"Marco!")
-                        data = s.recv(1024)
-                        print( f"Received from the server: { data.decode() }" )
+                    # check_connection( args.server_ip, args.server_cc_port )
+                    # check_connection( "192.168.0.25", args.server_cc_port )
+                    check_connection( "127.0.0.1", args.server_cc_port )
                     # TODO
 
                 case ClientCmds.INPUT_ENTRY.value:
@@ -137,6 +133,35 @@ def main():
         sys.exit(MainExitCodes.PRE_SERVER_RESPONSE.value)
     print('Full sequence completed. Congratulations.')
     sys.exit(MainExitCodes.AFTER_TRANSFER.value)
+
+
+def check_connection( ip_addr:str,
+                      port:int,
+                      timeout:float = 5.0 ):
+    """
+    Checks a connection by making a socket.connect() call to the IP address and
+    port passed in, sending a string, and then awaiting for one back.
+    """
+    with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+        print('Checking connection to server...')
+        try:
+            s.settimeout(timeout)
+            # TODO: Catch exceptions
+            # - TimeoutError
+            s.connect( (ip_addr, port) )
+            # TODO: Catch exceptions
+            s.sendall(b"Marco!")
+            # - InterruptedError
+            data = s.recv(1024) # This will throw a ConnectionRefusedError /w
+                                # errno @ 111 if there is nothing listening
+            # TODO: Catch exceptions
+            # - ConnectionRefusedError
+            # - InterruptedError
+            print(f"Received from the server: { data.decode() }")
+            print("Connection should be good!")
+        except:
+            print(f"Unable to connect to desired IP address {ip_addr} at port {port}.")
+            print(f"Timed out after {timeout} seconds or exception occurred.")
 
 if __name__ == "__main__":
     main()
